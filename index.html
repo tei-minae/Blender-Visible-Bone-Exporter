@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visible Bone Exporter Manual | Pokonya</title>
+    <meta name="description" content="Official manual for Visible Bone Only FBX Exporter & Cache Management for Blender. Learn how to export lightweight FBX for Unity/VRChat.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg-color: #0f0a15; --card-bg: rgba(26, 18, 38, 0.7); --primary: #ff2d7b; --secondary: #bd00ff; --accent: #2de2ff; --text-main: #e2e8f0; --text-dim: #94a3b8; --gradient: linear-gradient(135deg, var(--primary), var(--secondary)); --border: rgba(255, 255, 255, 0.1); }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: var(--bg-color); background-image: radial-gradient(circle at 10% 20%, rgba(189, 0, 255, 0.05) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(255, 45, 123, 0.05) 0%, transparent 40%); color: var(--text-main); font-family: 'Inter', sans-serif; line-height: 1.6; overflow-x: hidden; }
+        .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        header { text-align: center; margin-bottom: 60px; position: relative; }
+        header::after { content: ''; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); width: 80px; height: 4px; background: var(--gradient); border-radius: 2px; }
+        .lang-switcher { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; }
+        .lang-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: var(--text-dim); padding: 5px 15px; border-radius: 20px; cursor: pointer; transition: 0.3s; font-size: 0.85rem; }
+        .lang-btn.active { background: var(--gradient); color: #fff; border-color: transparent; }
+        [data-lang] { display: none; }
+        body.lang-jp [data-lang="jp"] { display: block; }
+        body.lang-en [data-lang="en"] { display: block; }
+        body.lang-ko [data-lang="ko"] { display: block; }
+        body.lang-zh [data-lang="zh"] { display: block; }
+        .brand { font-size: 1.2rem; color: var(--primary); text-transform: uppercase; letter-spacing: 4px; margin-bottom: 10px; display: block; }
+        h1 { font-family: 'Outfit', sans-serif; font-size: clamp(1.8rem, 5vw, 3rem); background: var(--gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 15px; }
+        section { margin-bottom: 50px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px; padding: 40px; backdrop-filter: blur(12px); animation: fadeIn 0.6s ease backwards; }
+        h2 { font-family: 'Outfit', sans-serif; font-size: 1.6rem; margin-bottom: 25px; display: flex; align-items: center; gap: 12px; color: #fff; }
+        h2::before { content: '😈'; font-size: 1.4rem; }
+        .intro-text { border-left: 4px solid var(--primary); padding-left: 20px; margin-bottom: 30px; font-size: 1.05rem; }
+        .steps { list-style: none; }
+        .step-item { position: relative; padding-left: 40px; margin-bottom: 25px; }
+        .step-item::before { content: attr(data-step); position: absolute; left: 0; top: 0; width: 28px; height: 28px; background: var(--gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; color: #fff; }
+        .step-item h3 { margin-bottom: 8px; color: var(--accent); }
+        .step-item ul { list-style: none; margin-top: 5px; padding-left: 5px; }
+        .step-item li { position: relative; padding-left: 15px; color: var(--text-dim); font-size: 0.95rem; }
+        .step-item li::after { content: '•'; position: absolute; left: 0; color: var(--primary); }
+        code { background: rgba(45, 226, 255, 0.1); color: var(--accent); padding: 2px 8px; border-radius: 4px; font-family: 'Courier New', Courier, monospace; font-weight: 600; }
+        strong { color: #fff; font-weight: 600; }
+        .alert-section { border-color: var(--primary); background: linear-gradient(to bottom right, rgba(255, 45, 123, 0.05), transparent); }
+        .alert-section h2::before { content: '❗'; }
+        .behavior-box { background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 20px; margin: 20px 0; border: 1px solid var(--border); }
+        .behavior-box h4 { color: var(--primary); text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; margin-bottom: 10px; }
+        .solution-box { background: rgba(45, 226, 255, 0.05); border-radius: 12px; padding: 20px; border: 1px solid rgba(45, 226, 255, 0.2); }
+        .solution-box h4 { color: var(--accent); margin-bottom: 10px; }
+        .notes-list { list-style: none; }
+        .notes-list li { padding: 12px 0; border-bottom: 1px solid var(--border); color: var(--text-dim); font-size: 0.95rem; }
+        .notes-list li:last-child { border-bottom: none; }
+        .notes-list b { color: var(--primary); }
+        .highlight-card { background: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 20px; margin-top: 20px; }
+        .highlight-card h4 { color: #fff; margin-bottom: 10px; font-size: 1.1rem; }
+        .env-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 20px; }
+        .env-item { background: rgba(255, 255, 255, 0.03); padding: 15px; border-radius: 12px; text-align: center; }
+        .env-item span { display: block; color: var(--text-dim); font-size: 0.8rem; margin-bottom: 5px; }
+        .ts-table { width: 100%; border-spacing: 0; margin-top: 20px; }
+        .ts-table th { text-align: left; border-bottom: 2px solid var(--border); padding: 10px; color: var(--accent); font-size: 0.9rem; }
+        .ts-table td { padding: 15px 10px; border-bottom: 1px solid var(--border); vertical-align: top; font-size: 0.9rem; }
+        footer { text-align: center; margin-top: 40px; padding: 40px 0; color: var(--text-dim); border-top: 1px solid var(--border); }
+        a { color: var(--primary); text-decoration: none; font-weight: bold; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="lang-jp">
+    <div class="container">
+        <header>
+            <span class="brand">Pokonya</span>
+            <h1>Visible Bone FBX Exporter</h1>
+            <div class="lang-switcher">
+                <button class="lang-btn active" data-lang-code="jp" onclick="setLang('jp')">日本語</button>
+                <button class="lang-btn" data-lang-code="en" onclick="setLang('en')">English</button>
+                <button class="lang-btn" data-lang-code="ko" onclick="setLang('ko')">한국어</button>
+                <button class="lang-btn" data-lang-code="zh" onclick="setLang('zh')">中文</button>
+            </div>
+        </header>
+
+        <!-- JAPANESE -->
+        <div data-lang="jp">
+            <section>
+                <div class="intro-text">
+                    本アドオンは、BlenderからのFBX出力時に、<strong>「表示されているボーン（Bone Collectionの表示設定）」</strong>のみを抽出して出力するツールです。🐾<br>
+                    VRChat向けアバターの最適化や、Unityへの軽量なデータ移行に役立ちます。
+                </div>
+                <h2>■ 使い方 (Usage)</h2>
+                <div class="steps">
+                    <div class="step-item" data-step="1"><h3>インストール</h3><ul><li>Blenderの <code>編集</code> → <code>プリファレンス</code> → <code>アドオン</code> → <code>インストール</code> から <code>.py</code> ファイルを選択して有効化。</li></ul></div>
+                    <div class="step-item" data-step="2"><h3>サイドバーを開く</h3><ul><li>3Dビューポート上で <code>Nキー</code> を押し、<strong>「FBX出力」</strong>タブを開きます。</li></ul></div>
+                    <div class="step-item" data-step="3"><h3>設定の確認</h3><ul><li>「表示ボーンのみ抽出する」にチェックが入っていることを確認します。</li></ul></div>
+                    <div class="step-item" data-step="4"><h3>エクスポート実行</h3><ul><li><code>エクスポート画面を開く</code> ボタンをクリックし、通常のFBXエクスポートと同様に保存先を指定して完了。</li></ul></div>
+                </div>
+            </section>
+            
+            <section class="alert-section">
+                <h2>■ 注意事項・仕様</h2>
+                <div class="behavior-box">
+                    <h4>【非破壊処理】</h4>
+                    <p>エクスポート時に一時的な複製データを作成するため、元のシーンデータは書き換えられません。</p>
+                </div>
+                <ul class="notes-list">
+                    <li><b>親子関係</b>: 親ボーンが非表示で子ボーンが表示されている場合、子ボーンは保持されますが親子関係が解除される場合があります。</li>
+                    <li><b>FBX構造の変化</b>: ボーン数が変わるため、Unity側でのウェイトや動作を必ず確認してください。</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>■ トラブルシューティング</h2>
+                <div class="solution-box">
+                    <h4>残骸データが残ってしまった場合</h4>
+                    <p>万が一異常終了などでシーンに <code>_BAK</code> という名前のオブジェクトが残った場合は、パネル内の <strong>「エクスポート残骸データを手動クリア」</strong> ボタンを押してください。</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- ENGLISH (Partial for consistency) -->
+        <div data-lang="en">
+            <section>
+                <div class="intro-text">
+                    This addon exports only <strong>"Visible Bones"</strong> (based on Bone Collection visibility) to FBX. 🐾
+                </div>
+                <h2>■ How to Use</h2>
+                <div class="steps">
+                    <div class="step-item" data-step="1"><h3>Install</h3><ul><li><code>Edit</code> → <code>Preferences</code> → <code>Add-ons</code> → <code>Install</code> and select the <code>.py</code> file.</li></ul></div>
+                    <div class="step-item" data-step="2"><h3>Open Sidebar</h3><ul><li>Press <code>N key</code> in 3D View and find <strong>"FBX Output"</strong> tab.</li></ul></div>
+                    <div class="step-item" data-step="3"><h3>Export</h3><ul><li>Click <code>Open Export UI</code> and save your FBX.</li></ul></div>
+                </div>
+            </section>
+        </div>
+
+        <footer>
+            <div class="creator">Pokonya</div>
+            <p style="margin-top: 10px;"><a href="terms.html">📜 Terms of Use / 利用規約</a></p>
+            <p style="margin-top: 10px;">&copy; 2026 Pokonya All Rights Reserved.</p>
+        </footer>
+    </div>
+    <script>
+        function setLang(langCode) {
+            document.body.className = 'lang-' + langCode;
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-lang-code') === langCode);
+            });
+            localStorage.setItem('bone_exporter_lang', langCode);
+        }
+        const savedLang = localStorage.getItem('bone_exporter_lang') || 'jp';
+        setLang(savedLang);
+    </script>
+</body>
+</html>
